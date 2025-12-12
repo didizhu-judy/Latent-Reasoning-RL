@@ -44,7 +44,7 @@
 
 
 ## NEWS
-- 2025-12-07: Released the reinforcement learning recipe of LLaVA-OneVision-1.5.
+- 2025-12-11: Released the reinforcement learning recipe of LLaVA-OneVision-1.5.
 
 ## Contents
 <!-- TOC (no expansion for Quick Start Guide / Fully Reproducing Guide) -->
@@ -92,6 +92,8 @@
 All evaluations were conducted using [lmms_eval](https://github.com/EvolvingLMMs-Lab/lmms-eval).
 
 ![](asset/performance.png)
+
+![](asset/coding_performance.png)
 
 ## Evaluation
 ```
