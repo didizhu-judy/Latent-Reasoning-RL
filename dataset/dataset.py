@@ -80,7 +80,7 @@ def process_dataset(
 
         thinking_prompt = (
             "Think and solve the following question step by step. "
-            "Please put your thinking and analysis procedure within <think></think>. "
+            "Please put your thinking and analysis procedure within <thinking></thinking>. "
             "Put ONLY your final answer within <answer></answer>."
         )
         normal_prompt = "Put ONLY your final answer within <answer></answer>."
