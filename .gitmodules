@@ -1,6 +1,6 @@
 [submodule "3rdparty/AReaL"]
 	path = 3rdparty/AReaL
-	url = git@github.com:DRC-MVP/LLaVAOV15-RL-AReaL.git
+	url = https://github.com/inclusionAI/AReaL.git
 [submodule "3rdparty/sglang"]
 	path = 3rdparty/sglang
-	url = git@github.com:DRC-MVP/LLaVAOV15-RL-sglang.git
+	url = https://github.com/sgl-project/sglang.git
