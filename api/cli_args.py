@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from areal.api.cli_args import DatasetConfig as BaseDatasetConfig
+from areal.api.cli_args import _DatasetConfig as BaseDatasetConfig
 from areal.api.cli_args import GRPOConfig as BaseGRPOConfig
 from areal.api.cli_args import PPOActorConfig as BasePPOActorConfig
 

@@ -30,8 +30,8 @@ project_root = os.path.dirname(current_dir)
 sys.path.append(project_root)
 
 from api.cli_args import GRPOConfig
+from areal.engine.ppo.actor import FSDPPPOActor  # 使用官方实现
 from dataset.dataset import get_dataset
-from engine.ppo.actor import FSDPPPOActor
 from reward.reward_system import RewardSystem
 from workflow.vision_rlvr import VisionRLVRWorkflow
 
@@ -196,17 +196,18 @@ def main(args):
         with stats_tracker.record_timing("rollout"):
             batch = None
             if actor.is_data_parallel_head():
-                if config.async_training:
+                # 新版本 AReaL：使用 actor.use_decoupled_loss 替代 async_training
+                if config.actor.use_decoupled_loss:
                     batch = rollout.prepare_batch(
                         train_dataloader,
                         workflow=workflow,
-                        should_accept=lambda sample: True,
+                        should_accept_fn=lambda sample: True,  # 新版本参数名：should_accept_fn
                     )
                 else:
                     batch = rollout.rollout_batch(
                         next(data_generator),
                         workflow=workflow,
-                        should_accept=lambda sample: True,
+                        # rollout_batch 不需要 should_accept 参数
                     )
                 batch = tensor_container_to(batch, actor.device)
             batch = broadcast_tensor_container(
@@ -232,14 +233,14 @@ def main(args):
                 log_gpu_stats("ref logp")
 
         with stats_tracker.record_timing("compute_advantage"):
-            actor.compute_advantages(batch)
+            batch = actor.compute_advantages(batch)  # 新版本返回 batch
             log_gpu_stats("compute advantages")
 
         with (
             stats_tracker.record_timing("train_step"),
             stats_tracker.scope("grpo_actor"),
         ):
-            stats = actor.ppo_update(batch)
+            actor.ppo_update(batch)  # 新版本返回 None
             actor.step_lr_scheduler()
             log_gpu_stats("ppo update")
 
@@ -302,9 +303,7 @@ def main(args):
         current_platform.synchronize()
 
         # Upload statistics to the logger (e.g., wandb)
-        stats[0].update(
-            stats_tracker.export_all(reduce_group=actor.data_parallel_group)
-        )
+        stats = actor.export_stats()  # 新版本通过 export_stats() 获取统计信息
         stats_logger.commit(epoch, step, global_step, stats)
 
         dist.barrier(device_ids=[actor.device.index])

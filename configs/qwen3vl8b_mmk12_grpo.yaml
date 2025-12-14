@@ -1,21 +1,20 @@
-experiment_name: qwen3vl-rl
-trial_name: trial1
+experiment_name: "qwen3vl-rl"
+trial_name: "trial1"
 
 seed: 219
 total_train_epochs: 30
 tokenizer_path: ${actor.path}
-async_training: true
 
 cluster:
   n_nodes: 1
-  n_gpus_per_node: 7
+  n_gpus_per_node: 8
   cluster_name: lrc-alpha-sg
   fileroot: ./experiments
   name_resolve:
     type: nfs
     nfs_record_root: ./experiments/name_resolve/qwen3vl8b-mmk12-grpo
 
-allocation_mode: sglang.d3p1t1+d4p1t1
+allocation_mode: "sglang:d4p1t1+fsdp:d4p1t1"
 
 rollout:
   experiment_name: ${experiment_name}
@@ -38,6 +37,8 @@ actor:
   trial_name: ${trial_name}
   path: Qwen/Qwen3-VL-8B-Thinking
   init_from_scratch: false
+  use_decoupled_loss: true
+  attn_impl: sdpa  # 使用 PyTorch 原生 SDPA，不依赖 flash-attn
   disable_dropout: true
   gradient_checkpointing: false
   dtype: bfloat16
@@ -53,7 +54,6 @@ actor:
     lr_scheduler_type: constant
     gradient_clipping: 1.0
     warmup_steps_proportion: 0.001
-  backend: fsdp
   group_size: ${gconfig.n_samples}
   eps_clip: 0.2
   eps_clip_higher: 0.28
@@ -63,7 +63,6 @@ actor:
   kl_ctl: 0.0
   ppo_n_minibatches: 1
   recompute_logprob: true
-  use_decoupled_loss: true
   behav_imp_weight_cap: 5.0
   dynamic_sampling: false
   reward_norm:
@@ -81,12 +80,12 @@ ref:
   trial_name: ${trial_name}
   path: ${actor.path}
   init_from_scratch: false
+  attn_impl: sdpa  # 使用 PyTorch 原生 SDPA，不依赖 flash-attn
   disable_dropout: true
   dtype: ${actor.dtype}
   mb_spec:
     max_tokens_per_mb: 4096
   optimizer: null
-  backend: fsdp
 
 # SGLang
 sglang:
@@ -148,7 +147,9 @@ stats_logger:
   trial_name: ${trial_name}
   fileroot: ${cluster.fileroot}
   wandb:
-    mode: disabled
+    mode: online
+    project: qwen3vl
+    entity: "judyzhu"  # 使用个人账户
 
 launcher:
   inference_server_cpus_per_gpu: 4
